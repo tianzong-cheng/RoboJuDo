@@ -142,6 +142,7 @@ class BeyondMimicCtrl(Controller):
                 self.interpolation_start_time = None
                 self.playing = True
         if self.timestep >= self.start_timestep + 20 * 50 and self.playing:
+            self.playing = False
             self.timestep = self.motion.time_step_total - 1
             self.motion_init_align.set_base(
                 quat=self.motion.body_quat_w[self.timestep, self.motion_anchor_body_index].copy()[[1, 2, 3, 0]],
