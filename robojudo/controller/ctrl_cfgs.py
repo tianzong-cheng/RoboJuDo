@@ -109,6 +109,8 @@ class BeyondMimicCtrlCfg(CtrlCfg):
 
     override_robot_anchor_pos: bool = False  # if True, drop pos fdb
 
+    start_timestep: int = 0
+
     # ==== motion config ====
     robot: str
     motion_name: str

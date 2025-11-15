@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from collections.abc import Sequence
 
 import numpy as np
@@ -55,6 +56,7 @@ class BeyondMimicCtrl(Controller):
         super().__init__(cfg_ctrl=cfg_ctrl, env=env, device=device)
         assert self.env is not None, "Env is required for BeyondMimicCtrl"
         self.override_robot_anchor_pos = self.cfg_ctrl.override_robot_anchor_pos
+        self.start_timestep = self.cfg_ctrl.start_timestep
 
         motion_file = self.cfg_ctrl.motion_path
         motion_cfg = self.cfg_ctrl.motion_cfg
@@ -62,8 +64,9 @@ class BeyondMimicCtrl(Controller):
         self.motion_anchor_body_index = motion_cfg.body_names.index(motion_cfg.anchor_body_name)
 
         self.motion = MotionLoader(motion_file, body_indexes, device="cpu")
-        self.timestep = 0
+        self.timestep = self.start_timestep
         self.playing = False
+        self.interpolation_start_time = None
 
         self.motion_init_align = TransformAlignment(yaw_only=True, xy_only=True)
         self.reset()
@@ -118,17 +121,27 @@ class BeyondMimicCtrl(Controller):
             return None
 
     def reset(self):
-        self.timestep = 0
+        self.interpolation_start_time = None
+        self.timestep = self.start_timestep
         self.pbar = ProgressBar(f"BeyondmimicCtrl {self.cfg_ctrl.motion_name}", self.motion.time_step_total)
 
         # align the robot to the motion's starting pose
-        init2anchor_pos = self.motion.body_pos_w[0, self.motion_anchor_body_index].copy()
-        init2anchor_quat = self.motion.body_quat_w[0, self.motion_anchor_body_index].copy()[[1, 2, 3, 0]]
+        init2anchor_pos = self.motion.body_pos_w[self.start_timestep, self.motion_anchor_body_index].copy()
+        init2anchor_quat = self.motion.body_quat_w[self.start_timestep, self.motion_anchor_body_index].copy()[
+            [1, 2, 3, 0]
+        ]
         # keep yaw only
         self.motion_init_align.set_base(quat=init2anchor_quat, pos=init2anchor_pos)
 
     def post_step_callback(self, commands: list[str] | None = None):
         self.pbar.set(self.timestep)
+        print(self.timestep)
+        if self.interpolation_start_time is not None:
+            elapsed_time = time.time() - self.interpolation_start_time
+            interp_duration = 2.0  # seconds
+            if elapsed_time >= interp_duration:
+                self.interpolation_start_time = None
+                self.playing = True
         if self.timestep < self.motion.time_step_total - 1:
             if self.playing:
                 self.timestep += 1
@@ -141,6 +154,12 @@ class BeyondMimicCtrl(Controller):
                     self.playing = True
                 case "[MOTION_FADE_OUT]":
                     self.playing = False
+                case "[POLICY_MIMIC]":
+                    if not self.playing and not self.interpolation_start_time:
+                        self.interpolation_start_time = time.time()
+                case "[POLICY_LOCO]":
+                    self.playing = False
+                    self.reset()
 
     def get_data(self):
         ctrl_data = {
