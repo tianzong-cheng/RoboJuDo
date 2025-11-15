@@ -65,8 +65,20 @@ class BeyondMimicPolicy(Policy):
             )
             action_scales = parse_floats(modelmeta_dict["action_scale"])
 
-            anchor_body_name = modelmeta_dict["anchor_body_name"]
-            body_names = parse_strings(modelmeta_dict["body_names"])
+            anchor_body_name = (
+                modelmeta_dict["anchor_body_name"] if "anchor_body_name" in modelmeta_dict else "torso_link"
+            )
+            body_names = (
+                parse_strings(modelmeta_dict["body_names"])
+                if "body_names" in modelmeta_dict
+                else parse_strings(
+                    (
+                        "pelvis,left_hip_roll_link,left_knee_link,left_ankle_roll_link,right_hip_roll_link,"
+                        "right_knee_link,right_ankle_roll_link,torso_link,left_shoulder_roll_link,left_elbow_link,"
+                        "left_wrist_yaw_link,right_shoulder_roll_link,right_elbow_link,right_wrist_yaw_link"
+                    )
+                )
+            )
             self.motion_anchor_body_index = body_names.index(anchor_body_name)
 
             # command_names = parse_strings(modelmeta_dict["command_names"])
