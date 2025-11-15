@@ -249,7 +249,7 @@ class G1_12DoF(G1_29DoF):
 
 
 class G1EnvCfg(EnvCfg):
-    xml: str = (ASSETS_DIR / "robots/g1/g1_29dof_rev_1_0.xml").as_posix()
+    xml: str = (ASSETS_DIR / "robots/g1/scene.xml").as_posix()
 
     dof: DoFConfig = G1_29DoF()
 
