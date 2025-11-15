@@ -135,13 +135,18 @@ class BeyondMimicCtrl(Controller):
 
     def post_step_callback(self, commands: list[str] | None = None):
         self.pbar.set(self.timestep)
-        print(self.timestep)
         if self.interpolation_start_time is not None:
             elapsed_time = time.time() - self.interpolation_start_time
             interp_duration = 2.0  # seconds
             if elapsed_time >= interp_duration:
                 self.interpolation_start_time = None
                 self.playing = True
+        if self.timestep >= self.start_timestep + 20 * 50 and self.playing:
+            self.timestep = self.motion.time_step_total - 1
+            self.motion_init_align.set_base(
+                quat=self.motion.body_quat_w[self.timestep, self.motion_anchor_body_index].copy()[[1, 2, 3, 0]],
+                pos=self.motion.body_pos_w[self.timestep, self.motion_anchor_body_index].copy(),
+            )
         if self.timestep < self.motion.time_step_total - 1:
             if self.playing:
                 self.timestep += 1
