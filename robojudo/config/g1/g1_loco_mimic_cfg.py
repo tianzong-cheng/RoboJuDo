@@ -46,6 +46,7 @@ class g1_locomimic_beyondmimic(G1RlLocoMimicPipelineCfg):
                 "'": "[POLICY_SWITCH],LAST",
             }
         ),
+        G1BeyondmimicCtrlCfg(motion_name="dance2_subject4", start_timestep=8800),
         # JoystickCtrlCfg(
         #     combination_init_buttons=[],
         #     triggers={
@@ -65,8 +66,10 @@ class g1_locomimic_beyondmimic(G1RlLocoMimicPipelineCfg):
 
     mimic_policies: list[G1BeyondMimicPolicyCfg] = [
         G1BeyondMimicPolicyCfg(policy_name="Dance_wose", without_state_estimator=True),
-        G1BeyondMimicPolicyCfg(policy_name="Violin", without_state_estimator=False, max_timestep=500),
-        G1BeyondMimicPolicyCfg(policy_name="Waltz", without_state_estimator=False, max_timestep=850),
+        G1BeyondMimicPolicyCfg(
+            policy_name="policy_dance2_subject4", without_state_estimator=True, use_motion_from_model=False
+        ),
+        G1BeyondMimicPolicyCfg(policy_name="policy_zuiwu_48000", without_state_estimator=True),
     ]
 
 
