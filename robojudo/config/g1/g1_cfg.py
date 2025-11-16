@@ -4,7 +4,6 @@ from robojudo.controller.ctrl_cfgs import (
     KeyboardCtrlCfg,  # noqa: F401
     UnitreeCtrlCfg,  # noqa: F401
 )
-from robojudo.environment.env_cfgs import UnitreeEnvCfg  # noqa: F401
 from robojudo.pipeline.pipeline_cfgs import (
     RlLocoMimicPipelineCfg,  # noqa: F401
     RlMultiPolicyPipelineCfg,  # noqa: F401
@@ -12,16 +11,24 @@ from robojudo.pipeline.pipeline_cfgs import (
 )
 
 from .ctrl.g1_beyondmimic_ctrl_cfg import G1BeyondmimicCtrlCfg  # noqa: F401
-from .ctrl.g1_motion_ctrl_cfg import G1MotionCtrlCfg  # noqa: F401
+from .ctrl.g1_motion_ctrl_cfg import (  # noqa: F401
+    G1MotionCtrlCfg,
+    G1MotionH2HCtrlCfg,
+    G1MotionKungfuBotCtrlCfg,
+    G1MotionTwistCtrlCfg,
+)
+from .ctrl.g1_twist_redis_ctrl_cfg import G1TwistRedisCtrlCfg  # noqa: F401
 from .env.g1_dummy_env_cfg import G1DummyEnvCfg  # noqa: F401
 from .env.g1_mujuco_env_cfg import G1_12MujocoEnvCfg, G1_23MujocoEnvCfg, G1MujocoEnvCfg  # noqa: F401
 from .env.g1_real_env_cfg import G1RealEnvCfg, G1UnitreeCfg  # noqa: F401
 from .policy.g1_amo_policy_cfg import G1AmoPolicyCfg  # noqa: F401
-from .policy.g1_asap_policy_cfg import G1AsapLocoPolicyCfg, G1AsapPolicyCfg, G1KungfuBotPolicyCfg  # noqa: F401
+from .policy.g1_asap_policy_cfg import G1AsapLocoPolicyCfg, G1AsapPolicyCfg  # noqa: F401
 from .policy.g1_beyondmimic_policy_cfg import G1BeyondMimicPolicyCfg  # noqa: F401
 from .policy.g1_h2h_policy_cfg import G1H2HPolicyCfg  # noqa: F401
+from .policy.g1_kungfubot_policy_cfg import G1KungfuBotGeneralPolicyCfg, G1KungfuBotPolicyCfg  # noqa: F401
 from .policy.g1_smooth_policy_cfg import G1SmoothPolicyCfg  # noqa: F401
-from .policy.g1_unitree_policy_cfg import G1UnitreePolicyCfg  # noqa: F401
+from .policy.g1_twist_policy_cfg import G1TwistPolicyCfg  # noqa: F401
+from .policy.g1_unitree_policy_cfg import G1UnitreePolicyCfg, G1UnitreeWoGaitPolicyCfg  # noqa: F401
 
 
 # ======================== Basic Configs ======================== #
@@ -43,6 +50,7 @@ class g1(RlPipelineCfg):
     ]
 
     policy: G1UnitreePolicyCfg = G1UnitreePolicyCfg()
+    # policy: G1UnitreeWoGaitPolicyCfg = G1UnitreeWoGaitPolicyCfg()
     # policy: G1AmoPolicyCfg = G1AmoPolicyCfg()
 
     # run_fullspeed: bool = env.is_sim
@@ -68,6 +76,8 @@ class g1_real(g1):
         UnitreeCtrlCfg(),
     ]
 
+    do_safety_check: bool = True  # enable safety check for real robot
+
 
 @cfg_registry.register
 class g1_switch(RlMultiPolicyPipelineCfg):
@@ -79,17 +89,17 @@ class g1_switch(RlMultiPolicyPipelineCfg):
     env: G1MujocoEnvCfg = G1MujocoEnvCfg()
 
     ctrl: list[KeyboardCtrlCfg | JoystickCtrlCfg] = [
-        KeyboardCtrlCfg(
-            triggers_extra={
-                "Key.tab": "[POLICY_TOGGLE]",
-            }
-        ),
-        # JoystickCtrlCfg(
+        # KeyboardCtrlCfg(
         #     triggers_extra={
-        #         "RB+Down": "[POLICY_SWITCH],0",
-        #         "RB+Up": "[POLICY_SWITCH],1",
+        #         "Key.tab": "[POLICY_TOGGLE]",
         #     }
         # ),
+        JoystickCtrlCfg(
+            triggers_extra={
+                "RB+Down": "[POLICY_SWITCH],0",
+                "RB+Up": "[POLICY_SWITCH],1",
+            }
+        ),
     ]
 
     policies: list[G1UnitreePolicyCfg | G1AmoPolicyCfg] = [
@@ -141,9 +151,9 @@ class g1_h2h(RlPipelineCfg):
 
     robot: str = "g1"
     env: G1MujocoEnvCfg = G1MujocoEnvCfg()
-    ctrl: list[KeyboardCtrlCfg | G1MotionCtrlCfg] = [
+    ctrl: list[KeyboardCtrlCfg | G1MotionH2HCtrlCfg] = [
         KeyboardCtrlCfg(),
-        G1MotionCtrlCfg(),
+        G1MotionH2HCtrlCfg(),
     ]
 
     policy: G1H2HPolicyCfg = G1H2HPolicyCfg()
@@ -244,6 +254,46 @@ class g1_asap_loco(RlPipelineCfg):
     ]
 
     policy: G1AsapLocoPolicyCfg = G1AsapLocoPolicyCfg()
+
+
+@cfg_registry.register
+class g1_kungfubot2(RlPipelineCfg):
+    """
+    PBHC KungfuBot2 General Policy
+    """
+
+    robot: str = "g1"
+    env: G1MujocoEnvCfg = G1MujocoEnvCfg()
+    ctrl: list[KeyboardCtrlCfg | G1MotionKungfuBotCtrlCfg] = [
+        KeyboardCtrlCfg(),
+        G1MotionKungfuBotCtrlCfg(
+            motion_name="kungfubot/Horse-stance_pose",  # put motion files in assets/motions/g1/phc/kungfubot
+        ),
+    ]
+
+    policy: G1KungfuBotGeneralPolicyCfg = G1KungfuBotGeneralPolicyCfg(
+        policy_name="horse_test_43000",  # this is a test model trained with only one motion
+        compatibility_old_version=True,  # for old version of kungfubot general policy (before 2025-11-13 bugfix #68)
+    )
+
+
+@cfg_registry.register
+class g1_twist(RlPipelineCfg):
+    """
+    Unitree G1 robot configuration, TWIST Policy, Sim2Sim.
+    TwistRedisCtrl for the original repo of high level motion stream over redis.
+    MotionTwistCtrl for built-in motion control.
+    """
+
+    robot: str = "g1"
+    env: G1MujocoEnvCfg = G1MujocoEnvCfg(forward_kinematic=None, update_with_fk=False, born_place_align=False)
+
+    ctrl: list[G1TwistRedisCtrlCfg | G1MotionTwistCtrlCfg] = [  # note: the ranking of controllers matters
+        G1TwistRedisCtrlCfg(redis_host="localhost"),  # with hign level motion lib through redis
+        # G1MotionTwistCtrlCfg(), # with built-in motion ctrl
+    ]
+
+    policy: G1TwistPolicyCfg = G1TwistPolicyCfg()
 
 
 # ======================== Fancy Example Configs ======================== #

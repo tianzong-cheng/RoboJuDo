@@ -61,7 +61,7 @@ class UnitreePolicyCfg(PolicyCfg):
         command: list[float] = [2.0, 2.0, 0.25]
 
     policy_type: str = "UnitreePolicy"
-    policy_name: str = "motion"
+    policy_name: str = "policy"
 
     @property
     def policy_file(self) -> str:
@@ -71,6 +71,39 @@ class UnitreePolicyCfg(PolicyCfg):
     action_scale: float = 0.25
     action_clip: float | None = None
     action_beta: float = 0.8
+
+    # ======= POLICY SPECIFIC CONFIGURATION =======
+    obs_scales: ObsScalesCfg = ObsScalesCfg()
+    max_cmd: list[float] = [0.8, 0.5, 1.57]
+    commands_map: list[list[float]] = [
+        [-1.0, 0.0, 1.0],
+        [1.0, 0.0, -1.0],
+        [1.0, 0.0, -1.0],
+    ]
+
+
+class UnitreeWoGaitPolicyCfg(PolicyCfg):
+    class ObsScalesCfg(Config):
+        ang_vel: float = 0.2
+        gravity: float = 1.0
+        dof_pos: float = 1.0
+        dof_vel: float = 0.05
+        command: list[float] = [1.0, 1.0, 1.0]
+
+    policy_type: str = "UnitreeWoGaitPolicy"
+    policy_name: str = "policy_wo_gait"
+
+    @property
+    def policy_file(self) -> str:
+        policy_file = ASSETS_DIR / f"models/{self.robot}/unitree/{self.policy_name}.pt"
+        return policy_file.as_posix()
+
+    action_scale: float = 0.25
+    action_clip: float | None = None
+    action_beta: float = 1.0
+
+    history_length: int = 5  # number of history observations to use
+    history_obs_dims: dict[str, int] = {}
 
     # ======= POLICY SPECIFIC CONFIGURATION =======
     obs_scales: ObsScalesCfg = ObsScalesCfg()
@@ -307,3 +340,90 @@ class AsapLocoPolicyCfg(PolicyCfg):
 
     # ======= Default Command CONFIGURATION =======
     command_base_height_default: float
+
+
+class KungfuBotGeneralPolicyCfg(PolicyCfg):
+    policy_type: str = "KungfuBotGeneralPolicy"
+    disable_autoload: bool = True
+
+    # ======= MOTION POLICY CONFIGURATION =======
+    policy_name: str
+
+    @property
+    def policy_file(self) -> str:
+        policy_file = ASSETS_DIR / f"models/{self.robot}/kungfubot2/{self.policy_name}.onnx"
+        return policy_file.as_posix()
+
+    # ======= POLICY SPECIFIC CONFIGURATION =======
+    class ObsScalesCfg(Config):
+        # base_lin_vel: float
+        base_ang_vel: float
+        dof_pos: float
+        dof_vel: float
+        actions: float
+        roll_pitch: float
+        # anchor_ref_pos: float
+        anchor_ref_rot: float
+        next_step_ref_motion: float
+        history: float
+        future_motion_root_height: float
+        future_motion_roll_pitch: float
+        future_motion_base_lin_vel: float
+        future_motion_base_yaw_vel: float
+        future_motion_dof_pos: float
+
+    action_scale: float = 0.0  # not used, scale for each dof
+    action_clip: float | None = 100.0
+    action_scales: list[float]
+    obs_scales: ObsScalesCfg
+
+    history_length: int = 10  # number of history observations to use
+    history_obs_dims: dict[str, int] = {}
+    """
+    Note: the history obs item should be aligned with code of policy
+    IMPORTANT: the key order should be SORTED when concat history obs!!!
+    """
+
+    compatibility_old_version: bool = False
+    """For old version of kungfubot general policy (before 2025-11-13 bugfix #68)"""
+
+
+class TwistPolicyCfg(PolicyCfg):
+    class ObsScalesCfg(Config):
+        ang_vel: float = 0.25
+        dof_vel: float = 0.05
+        dof_pos: float = 1.0
+
+    policy_type: str = "TwistPolicy"
+    policy_name: str
+
+    @property
+    def policy_file(self) -> str:
+        policy_file = ASSETS_DIR / f"models/{self.robot}/twist/{self.policy_name}.pt"
+        return policy_file.as_posix()
+
+    action_scale: float = 0.5
+    action_clip: float | None = 10.0
+    action_beta: float = 1.0
+
+    # ======= POLICY SPECIFIC CONFIGURATION =======
+    obs_scales: ObsScalesCfg = ObsScalesCfg()
+
+    history_length: int = 10
+
+    @property
+    def n_mimic_obs(self) -> int:
+        return self.action_dof.num_dofs + 8
+
+    @property
+    def history_obs_size(self) -> int:
+        history_obs_size = self.n_mimic_obs + 3 + 2 + 3 * self.action_dof.num_dofs
+        return history_obs_size
+
+    ankle_idx: list[int]
+    mimic_obs_total_degrees: int
+    mimic_obs_wrist_ids: list[int]
+
+    @property
+    def mimic_obs_other_ids(self) -> list[int]:
+        return [f for f in range(self.mimic_obs_total_degrees) if f not in self.mimic_obs_wrist_ids]

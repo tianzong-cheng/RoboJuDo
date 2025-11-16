@@ -79,16 +79,15 @@ class MotionCtrlCfg(CtrlCfg):
                 phc_robot_config_dict["asset"]["assetFileName"] = (
                     phc_dir_path / phc_robot_config_dict["asset"]["assetFileName"]
                 ).as_posix()
-                phc_robot_config_dict["asset"]["urdfFileName"] = (
-                    phc_dir_path / phc_robot_config_dict["asset"]["urdfFileName"]
-                ).as_posix()
+                # phc_robot_config_dict["asset"]["urdfFileName"] = (
+                #     phc_dir_path / phc_robot_config_dict["asset"]["urdfFileName"]
+                # ).as_posix()
 
                 self.robot_config = phc_robot_config_dict
 
     ctrl_type: str = "MotionCtrl"
 
     motion_ctrl_gui: bool = True
-    extra_motion_data: bool = False  # extra data for motion recognition
 
     # ==== policy specific configs ====
     track_keypoints_names: list[str] = []
@@ -102,6 +101,29 @@ class MotionCtrlCfg(CtrlCfg):
     def motion_path(self) -> str:
         motion_path = ASSETS_DIR / f"motions/{self.robot}/phc/{self.motion_name}.pkl"
         return motion_path.as_posix()
+
+
+class MotionH2HCtrlCfg(MotionCtrlCfg):
+    ctrl_type: str = "MotionH2HCtrl"
+
+    extra_motion_data: bool = False  # extra data for motion recognition
+
+
+class MotionKungfuBotCtrlCfg(MotionCtrlCfg):
+    ctrl_type: str = "MotionKungfuBotCtrl"
+
+    future_max_steps: int = 95
+    future_num_steps: int = 20
+
+    anchor_index: int = 0  # root
+    key_body_id: list[int]
+
+
+class MotionTwistCtrlCfg(MotionCtrlCfg):
+    ctrl_type: str = "MotionTwistCtrl"
+
+    # ==== motion config ====
+    robot: str
 
 
 class BeyondMimicCtrlCfg(CtrlCfg):
@@ -130,3 +152,14 @@ class BeyondMimicCtrlCfg(CtrlCfg):
         """from beyondmimic asset, used for indexing"""
 
     motion_cfg: MotionCommandCfg
+
+
+class TwistRedisCtrlCfg(CtrlCfg):
+    ctrl_type: str = "TwistRedisCtrl"
+
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_db: int = 0
+    redis_key: str = "action_mimic_g1"  # key to get command data from redis
+
+    buffer_size: int = 5  # size of the data buffer to store recent commands

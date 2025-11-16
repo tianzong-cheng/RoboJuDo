@@ -36,6 +36,10 @@ def install_submodules(selected=None):
         addons = info.get("addons", [])
 
         print(f"Initializing submodule '{name}'...")
+        # If submodule already initialized, clean it first
+        if (path / ".git").exists():
+            print(f"Cleaning existing submodule '{name}'...")
+            run(f"cd {path} && git reset --hard && git clean -fd")
         run(f"git submodule update --init {path}")
 
         if not path.exists():

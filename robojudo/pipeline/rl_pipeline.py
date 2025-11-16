@@ -103,6 +103,8 @@ class RlPipeline(Pipeline):
         self.ctrl_manager.reset()
 
     def safety_check(self):
+        if not self.do_safety_check:
+            return
         gravity_ori = get_gravity_orientation(self.env.base_quat)
         angle = np.arccos(np.clip(-gravity_ori[2], -1.0, 1.0))
         if abs(angle) > 1.0:  # more than ~57 degrees

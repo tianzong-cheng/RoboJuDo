@@ -24,6 +24,7 @@ def __getattr__(name: str) -> type[Policy]:
 
 # ===== Declare all your custom environments here =====
 policy_registry.add("UnitreePolicy", ".unitree_policy")
+policy_registry.add("UnitreeWoGaitPolicy", ".unitree_policy")
 policy_registry.add("SmoothPolicy", ".smooth_policy")
 policy_registry.add("H2HStudentPolicy", ".h2h_student_policy")
 policy_registry.add("AMOPolicy", ".amo_policy")
@@ -32,3 +33,5 @@ policy_registry.add("AMOPolicy", ".amo_policy")
 policy_registry.add("BeyondMimicPolicy", ".beyondmimic_policy")
 policy_registry.add("AsapPolicy", ".asap_policy")
 policy_registry.add("AsapLocoPolicy", ".asap_policy")
+policy_registry.add("KungfuBotGeneralPolicy", ".kungfubot_policy")
+policy_registry.add("TwistPolicy", ".twist_policy")
