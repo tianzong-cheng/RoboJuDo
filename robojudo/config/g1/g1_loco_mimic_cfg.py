@@ -46,7 +46,6 @@ class g1_locomimic_beyondmimic(G1RlLocoMimicPipelineCfg):
                 "'": "[POLICY_SWITCH],LAST",
             }
         ),
-        G1BeyondmimicCtrlCfg(motion_name="dance2_subject4", start_timestep=8800),
         # JoystickCtrlCfg(
         #     combination_init_buttons=[],
         #     triggers={
@@ -59,17 +58,25 @@ class g1_locomimic_beyondmimic(G1RlLocoMimicPipelineCfg):
         # ),
     ]
 
-    loco_policy: G1AmoPolicyCfg = G1AmoPolicyCfg()
+    loco_policy: G1AmoPolicyCfg = G1AsapLocoPolicyCfg()
     # policy: G1AsapLocoPolicyCfg = G1AsapLocoPolicyCfg()
     # policy: G1UnitreePolicyCfg = G1UnitreePolicyCfg()
     """Any LocoMotion policy, as init"""
 
     mimic_policies: list[G1BeyondMimicPolicyCfg] = [
-        G1BeyondMimicPolicyCfg(policy_name="Dance_wose", without_state_estimator=True),
         G1BeyondMimicPolicyCfg(
-            policy_name="policy_dance2_subject4", without_state_estimator=True, use_motion_from_model=False
+            policy_name="policy_dance2_subject3",
+            without_state_estimator=True,
+            start_timestep=43 * 50,
+            max_timestep=(43 + 24) * 50,
         ),
-        G1BeyondMimicPolicyCfg(policy_name="policy_zuiwu_48000", without_state_estimator=True),
+        G1BeyondMimicPolicyCfg(
+            policy_name="policy_dance2_subject4",
+            without_state_estimator=True,
+            start_timestep=177 * 50,
+            max_timestep=(177 + 20) * 50,
+        ),
+        G1BeyondMimicPolicyCfg(policy_name="Dance_wose", without_state_estimator=True),
     ]
 
 
