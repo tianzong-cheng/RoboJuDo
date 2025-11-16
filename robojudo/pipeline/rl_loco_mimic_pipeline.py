@@ -24,7 +24,7 @@ class PolicyInterpManager(PolicyManager):
         IN_PROGRESS = auto()
         END = auto()
 
-    DURATIONS_LOCO_MIMIC = [0, 75, 25]  # [start, in-progress, end] in steps
+    DURATIONS_LOCO_MIMIC = [5, 70, 25]  # [start, in-progress, end] in steps
     DURATIONS_MIMIC_LOCO = [25, 75, 0]  # [start, in-progress, end] in steps
 
     def __init__(

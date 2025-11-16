@@ -161,11 +161,12 @@ class BeyondMimicCtrl(Controller):
                 case "[MOTION_FADE_OUT]":
                     self.playing = False
                 case "[POLICY_MIMIC]":
+                    self.reset()
                     if not self.playing and not self.interpolation_start_time:
                         self.interpolation_start_time = time.time()
                 case "[POLICY_LOCO]":
                     self.playing = False
-                    self.reset()
+                    # self.reset()
 
     def get_data(self):
         ctrl_data = {
