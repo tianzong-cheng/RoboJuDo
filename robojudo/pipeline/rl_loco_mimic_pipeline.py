@@ -1,6 +1,7 @@
 import lcm
 import logging
 import time
+import threading
 from collections.abc import Callable
 from enum import Enum, auto
 
@@ -15,7 +16,7 @@ from robojudo.pipeline.rl_multi_policy_pipeline import PolicyManager, RlMultiPol
 from robojudo.pipeline.rl_pipeline import PolicyWrapper
 from robojudo.policy import PolicyCfg
 from robojudo.utils.progress import ProgressBar
-from third_party.lcm.performance_status_lcm_t import performance_status_lcm_t
+from .lcm_t.performance_status_lcm_t import performance_status_lcm_t
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,9 @@ class PolicyInterpManager(PolicyManager):
         self.dance_is_finished = False
         self.voice_trigger = False
         self.lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=255")
+        self.lc_thread = threading.Thread(target=self.lc_thread_func)
+        self.lc_thread.start()
+        self.dance_receive = self.lc.subscribe("PERF_CHANNEL",self.dance_cb)        
 
     def heart_beat_thread(self):
         while True:
@@ -84,6 +88,10 @@ class PolicyInterpManager(PolicyManager):
             if self.dance_id > 0:
                 self.toggle_mimic_policy(1)
                 self.voice_trigger = True
+    
+    def lc_thread_func(self):
+        while True:
+            self.lc.handle()
 
     def _interpolate_init(
         self,
