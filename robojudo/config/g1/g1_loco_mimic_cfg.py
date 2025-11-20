@@ -29,7 +29,7 @@ from .policy.g1_h2h_policy_cfg import G1H2HPolicyCfg  # noqa: F401
 from .policy.g1_kungfubot_policy_cfg import G1KungfuBotGeneralPolicyCfg, G1KungfuBotPolicyCfg  # noqa: F401
 from .policy.g1_smooth_policy_cfg import G1SmoothPolicyCfg  # noqa: F401
 from .policy.g1_twist_policy_cfg import G1TwistPolicyCfg  # noqa: F401
-from .policy.g1_unitree_policy_cfg import G1UnitreePolicyCfg, G1UnitreeWoGaitPolicyCfg  # noqa: F401
+from .policy.g1_unitree_policy_cfg import G1UnitreePolicyCfg, G1UnitreeWoGaitPolicyCfg, OurPolicyCfg  # noqa: F401
 
 # ================= LocoMotion + MotionMimic Policy Switch Configs ================= #
 
@@ -65,7 +65,7 @@ class g1_locomimic_beyondmimic(G1RlLocoMimicPipelineCfg):
         # ),
     ]
 
-    loco_policy: G1AsapLocoPolicyCfg = G1AsapLocoPolicyCfg()
+    loco_policy: OurPolicyCfg = OurPolicyCfg()
     """Any LocoMotion policy, as init"""
 
     mimic_policies: list[G1BeyondMimicPolicyCfg] = [
@@ -78,8 +78,8 @@ class g1_locomimic_beyondmimic(G1RlLocoMimicPipelineCfg):
         G1BeyondMimicPolicyCfg(
             policy_name="policy_dance2_subject4",
             without_state_estimator=True,
-            start_timestep=177 * 50,
-            max_timestep=1975 * 5,
+            start_timestep=1750 * 5,
+            max_timestep=9900,
         ),
         G1BeyondMimicPolicyCfg(policy_name="Dance_wose", without_state_estimator=True, max_timestep=1120),
     ]

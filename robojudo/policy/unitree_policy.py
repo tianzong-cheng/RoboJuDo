@@ -3,6 +3,7 @@ import numpy as np
 from robojudo.environment.utils.mujoco_viz import MujocoVisualizer
 from robojudo.policy import Policy, policy_registry
 from robojudo.policy.policy_cfgs import UnitreePolicyCfg, UnitreeWoGaitPolicyCfg
+from robojudo.config.g1.policy.g1_unitree_policy_cfg import OurPolicyCfg
 from robojudo.utils.util_func import command_remap, get_gravity_orientation
 
 
@@ -157,6 +158,36 @@ class UnitreeWoGaitPolicy(UnitreePolicy):
 
         history_list = [np.concatenate(items, axis=0) for items in zip(*self.history_buf, strict=True)]
         obs = np.concatenate(history_list, axis=0)
+
+        extras = {
+            "commands": commands,
+        }
+        return obs, extras
+
+
+@policy_registry.register
+class OurPolicy(UnitreePolicy):
+    cfg_policy: OurPolicyCfg
+
+    def __init__(self, cfg_policy, device):
+        super().__init__(cfg_policy=cfg_policy, device=device)
+
+    def reset(self):
+        self.timestep: int = 0
+
+    def get_observation(self, env_data, ctrl_data):
+        commands = self._get_commands(ctrl_data)
+
+        gravity_orientation = get_gravity_orientation(env_data.base_quat)
+        obs = [
+            env_data.base_ang_vel * 1.0,
+            gravity_orientation * 1.0,
+            commands * 1.0 * self.max_cmd,
+            (env_data.dof_pos - self.default_dof_pos) * 1.0,
+            env_data.dof_vel * 1.0,
+            self.last_action,
+        ]
+        obs = np.concatenate(obs, axis=0)
 
         extras = {
             "commands": commands,

@@ -31,8 +31,8 @@ class MujocoEnvCfg(EnvCfg):
     is_sim: bool = True
     # ====== ENV CONFIGURATION ======
     sim_duration: float = 60.0
-    sim_dt: float = 0.001
-    sim_decimation: int = 20
+    sim_dt: float = 0.005
+    sim_decimation: int = 4
 
     visualize_extras: bool = True  # TODO: remove
 
