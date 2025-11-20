@@ -81,7 +81,7 @@ class g1_locomimic_beyondmimic(G1RlLocoMimicPipelineCfg):
             start_timestep=177 * 50,
             max_timestep=(177 + 20) * 50,
         ),
-        G1BeyondMimicPolicyCfg(policy_name="Dance_wose", without_state_estimator=True),
+        G1BeyondMimicPolicyCfg(policy_name="Dance_wose", without_state_estimator=True, max_timestep=1800),
     ]
 
 
