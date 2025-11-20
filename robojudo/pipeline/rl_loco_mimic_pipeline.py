@@ -1,4 +1,6 @@
+import lcm
 import logging
+import time
 from collections.abc import Callable
 from enum import Enum, auto
 
@@ -13,6 +15,7 @@ from robojudo.pipeline.rl_multi_policy_pipeline import PolicyManager, RlMultiPol
 from robojudo.pipeline.rl_pipeline import PolicyWrapper
 from robojudo.policy import PolicyCfg
 from robojudo.utils.progress import ProgressBar
+from third_party.lcm.performance_status_lcm_t import performance_status_lcm_t
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +57,33 @@ class PolicyInterpManager(PolicyManager):
 
         self.loco_dof_pos = loco_dof_pos if loco_dof_pos is not None else self.env.default_pos.copy()
         self.override_dof_pos = self.loco_dof_pos.copy()
+
+        self.dance_id = 0
+        self.dance_is_finished = False
+        self.voice_trigger = False
+        self.lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=255")
+
+    def heart_beat_thread(self):
+        while True:
+            heart_beat = performance_status_lcm_t()
+            if self.dance_is_finished:
+                heart_beat.heart_beat = True
+                heart_beat.is_finished = True
+                heart_beat.dance_id = 0
+                self.dance_id = 0
+            else:
+                heart_beat.heart_beat = False
+            self.lc.publish("PERF_CHANNEL", heart_beat.encode())
+            self.dance_is_finished = False
+            time.sleep(0.05)
+
+    def dance_cb(self, channel, data):
+        msg = performance_status_lcm_t.decode(data)
+        if msg.heart_beat:
+            self.dance_id = msg.dance_id
+            if self.dance_id > 0:
+                self.toggle_mimic_policy(1)
+                self.voice_trigger = True
 
     def _interpolate_init(
         self,
@@ -220,6 +250,11 @@ class RlLocoMimicPipeline(RlMultiPolicyPipeline):
                     if self.policy_locomotion_mimic_flag == 1:
                         commands.append("[POLICY_LOCO]")
                         logger.info("Mimic motion done, switch to locomotion policy.")
+
+        if self.policy_manager.voice_trigger:
+            self.policy_manager.voice_trigger = False
+            if self.policy_locomotion_mimic_flag == 0:
+                commands.append("[POLICY_MIMIC]")
 
         for command in commands:
             match command:

@@ -1,0 +1,5 @@
+struct performance_status_lcm_t {
+    boolean heart_beat; //True for valid message, False for heart beat signal
+    int32_t dance_id;
+    boolean is_finished;
+}
