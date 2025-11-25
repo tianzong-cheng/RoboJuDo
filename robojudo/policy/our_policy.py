@@ -25,11 +25,6 @@ class OurPolicy(Policy):
     def post_step_callback(self, commands=None):
         self.timestep += 1
 
-    def _get_phase(self):
-        cycle_time = 0.8
-        phase = self.timestep * self.dt / cycle_time
-        return phase
-
     def _get_commands(self, ctrl_data):
         commands = np.zeros(3)
         for key in ctrl_data.keys():
@@ -67,11 +62,11 @@ class OurPolicy(Policy):
 
         gravity_orientation = get_gravity_orientation(env_data.base_quat)
         obs = [
-            env_data.base_ang_vel * 1.0,
-            gravity_orientation * 1.0,
-            commands * 1.0 * self.max_cmd,
-            (env_data.dof_pos - self.default_dof_pos) * 1.0,
-            env_data.dof_vel * 1.0,
+            env_data.base_ang_vel * self.obs_scales.ang_vel,
+            gravity_orientation * self.obs_scales.gravity,
+            commands * self.obs_scales.command * self.max_cmd,
+            (env_data.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
+            env_data.dof_vel * self.obs_scales.dof_vel,
             self.last_action,
         ]
         obs = np.concatenate(obs, axis=0)

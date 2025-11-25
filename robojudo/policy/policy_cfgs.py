@@ -431,10 +431,10 @@ class TwistPolicyCfg(PolicyCfg):
 
 class OurPolicyCfg(PolicyCfg):
     class ObsScalesCfg(Config):
-        ang_vel: float = 0.2
+        ang_vel: float = 1.0
         gravity: float = 1.0
         dof_pos: float = 1.0
-        dof_vel: float = 0.05
+        dof_vel: float = 1.0
         command: list[float] = [1.0, 1.0, 1.0]
 
     policy_type: str = "OurPolicy"
