@@ -427,3 +427,33 @@ class TwistPolicyCfg(PolicyCfg):
     @property
     def mimic_obs_other_ids(self) -> list[int]:
         return [f for f in range(self.mimic_obs_total_degrees) if f not in self.mimic_obs_wrist_ids]
+
+
+class OurPolicyCfg(PolicyCfg):
+    class ObsScalesCfg(Config):
+        ang_vel: float = 0.2
+        gravity: float = 1.0
+        dof_pos: float = 1.0
+        dof_vel: float = 0.05
+        command: list[float] = [1.0, 1.0, 1.0]
+
+    policy_type: str = "OurPolicy"
+    policy_name: str
+
+    @property
+    def policy_file(self) -> str:
+        policy_file = ASSETS_DIR / f"models/{self.robot}/our/{self.policy_name}.pt"
+        return policy_file.as_posix()
+
+    action_scale: float = 0.25
+    action_clip: float | None = None
+    action_beta: float = 1.0
+
+    # ======= POLICY SPECIFIC CONFIGURATION =======
+    obs_scales: ObsScalesCfg = ObsScalesCfg()
+    max_cmd: list[float] = [0.8, 0.5, 1.57]
+    commands_map: list[list[float]] = [
+        [-1.0, 0.0, 1.0],
+        [1.0, 0.0, -1.0],
+        [1.0, 0.0, -1.0],
+    ]
