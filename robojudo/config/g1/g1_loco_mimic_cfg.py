@@ -66,7 +66,7 @@ class g1_locomimic_beyondmimic(G1RlLocoMimicPipelineCfg):
         # ),
     ]
 
-    loco_policy: G1OurPolicyCfg = G1OurPolicyCfg()
+    loco_policy: G1AmoPolicyCfg = G1AmoPolicyCfg()
     """Any LocoMotion policy, as init"""
 
     mimic_policies: list[G1BeyondMimicPolicyCfg] = [
